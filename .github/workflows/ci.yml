@@ -68,9 +68,9 @@ jobs:
         # Run in all these versions of Python
         python-version: ["3.8", "3.9", "3.10"]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - name: Install Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
       - name: Display Python version
@@ -85,5 +85,3 @@ jobs:
           #pip install pylint
       - name: Run unit tests
         run: python -m unittest
-          #- name: Run pylint
-          #run: pylint UltraDict.py
