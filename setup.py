@@ -6,24 +6,23 @@ import Cython.Build
 this_directory = Path(__file__).parent
 long_description = (this_directory / "readme.md").read_text()
 
-version = '0.0.6'
+version = "0.1.0"
 
-ext = Extension(name="UltraDict", sources=["UltraDict.py"])
+ext = [
+    Extension("hyperdict", ["src/hyperdict/_hyperdict.py", "src/hyperdict/_errors.py"],),
+]
 
 setup(
-    name='UltraDict',
+    name="hyperdict",
     version=version,
-    description='Sychronized, streaming dictionary that uses shared memory as a backend',
+    description="Sychronized, streaming dictionary that uses shared memory as a backend",
     long_description=long_description,
-    long_description_content_type='text/markdown',
-    author='Ronny Rentner',
-    author_email='ultradict.code@ronny-rentner.de',
-    url='https://github.com/ronny-rentner/UltraDict',
-    cmdclass={'build_ext': Cython.Build.build_ext},
-    package_dir={'UltraDict': '.'},
-    packages=['UltraDict'],
+    long_description_content_type="text/markdown",
+    package_dir={"hyperdict": "src"},
+    packages=["hyperdict"],
     zip_safe=False,
-    ext_modules=Cython.Build.cythonize(ext, compiler_directives={'language_level' : "3"}),
-    setup_requires=['cython>=0.24.1'],
-    python_requires=">=3.8",
+    ext_modules=Cython.Build.cythonize(
+        ext, compiler_directives={"language_level": "3"}
+    ),
+    python_requires=">=3.10",
 )
