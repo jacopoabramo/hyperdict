@@ -6,7 +6,9 @@ The project is a fork of [`UltraDict`](https://github.com/ronny-rentner/UltraDic
 
 Contrary to its predecessor, `hyperdict` is supported for Python >= 3.10 only.
 
-**Warning: This is an early hack. There are only few unit tests and so on. Maybe not stable!**
+> [!WARNING]
+> Much of this project was at the time an early hack. This is still the case.
+> I hope in the future to stabilize the project a bit and provide better performance.
 
 Features:
 * Fast (compared to other sharing solutions)
@@ -53,7 +55,7 @@ In one Python REPL:
 ```python
 Python 3.9.2 on linux
 >>>
->>> from HyperDict import HyperDict
+>>> from hyperdict import HyperDict
 >>> ultra = HyperDict({ 1:1 }, some_key='some_value')
 >>> ultra
 {1: 1, 'some_key': 'some_value'}
@@ -67,7 +69,7 @@ In another Python REPL:
 ```python
 Python 3.9.2 on linux
 >>>
->>> from HyperDict import HyperDict
+>>> from hyperdict import HyperDict
 >>> # Connect to the shared memory with the name above
 >>> other = HyperDict(name='psm_ad73da69')
 >>> other
@@ -87,11 +89,11 @@ In one Python REPL:
 ```python
 Python 3.9.2 on linux
 >>>
->>> from HyperDict import HyperDict
+>>> from hyperdict import HyperDict
 >>> ultra = HyperDict(recurse=True)
 >>> ultra['nested'] = { 'counter': 0 }
 >>> type(ultra['nested'])
-<class 'HyperDict.HyperDict'>
+<class 'hyperdict.HyperDict'>
 >>> ultra.name
 'psm_0a2713e4'
 ```
@@ -100,7 +102,7 @@ In another Python REPL:
 ```python
 Python 3.9.2 on linux
 >>>
->>> from HyperDict import HyperDict
+>>> from hyperdict import HyperDict
 >>> other = HyperDict(name='psm_0a2713e4')
 >>> other['nested']['counter'] += 1
 ```
