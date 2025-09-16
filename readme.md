@@ -1,6 +1,10 @@
-# HyperDict
+# `hyperdict`
 
-Sychronized, streaming Python dictionary that uses shared memory as a backend
+Sychronized, streaming Python dictionary that uses shared memory as a backend.
+
+The project is a fork of [`UltraDict`](https://github.com/ronny-rentner/UltraDict) which follows standardized Python practices for code structure and packaging.
+
+Contrary to its predecessor, `hyperdict` is supported for Python >= 3.10 only.
 
 **Warning: This is an early hack. There are only few unit tests and so on. Maybe not stable!**
 
@@ -212,7 +216,7 @@ I am interested in extending the performance testing to other solutions (like sq
 
 ## Parameters
 
-`Ultradict(*arg, name=None, create=None, buffer_size=10000, serializer=pickle, shared_lock=False, full_dump_size=None, auto_unlink=None, recurse=False, recurse_register=None, **kwargs)`
+`hyperdict.HyperDict(*arg, name=None, create=None, buffer_size=10000, serializer=pickle, shared_lock=False, full_dump_size=None, auto_unlink=None, recurse=False, recurse_register=None, **kwargs)`
 
 `name`: Name of the shared memory. A random name will be chosen if not set. By default, if a name is given
 a new shared memory space is created if it does not exist yet. Otherwise the existing shared
@@ -256,7 +260,7 @@ dict.
 
 `recurse`: If True, any nested dict objects will be automaticall wrapped in an `HyperDict` allowing transparent nested updates.
 
-`recurse_register`: Has to be either the `name` of an HyperDict or an HyperDict instance itself. Will be used internally to keep track of dynamically created, recursive UltraDicts for proper cleanup when using `recurse=True`. Usually does not have to be set by the user.
+`recurse_register`: Has to be either the `name` of an HyperDict or an HyperDict instance itself. Will be used internally to keep track of dynamically created, recursive `HyperDict` for proper cleanup when using `recurse=True`. Usually does not have to be set by the user.
 
 ## Memory management
 
@@ -267,7 +271,7 @@ that is creating a certain `HyperDict` will automatically get the flag `auto_unl
 When this process with the `auto_unlink=True` flag ends, it will try to unlink (free) all shared memory buffers.
 
 A special case is the recursive mode using `recurse=True` parameter. This mode will use an additional internal `HyperDict` to keep
-track of recursively nested `HyperDict` instances. All child `UltraDicts` will write to this register the names of the shared memory buffers
+track of recursively nested `HyperDict` instances. All child `HyperDict` will write to this register the names of the shared memory buffers
 they are creating. This allows the buffers to outlive the processes and still being correctly cleanup up by at the end of the program.
 
 **Buffer sizes and read performance:**
