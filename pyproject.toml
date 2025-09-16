@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=80", "cython>=3.1", "psutil", "atomics"]
+requires = ["setuptools>=80", "cython>=3.1", "psutil>=7.0.0", "atomics>=1.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -31,5 +31,7 @@ where = ["src"]
 
 [project.optional-dependencies]
 dev = [
-    "ruff"
+    "ruff",
+    "psutil>=7.0.0",
+    "atomics>=1.0.3"
 ]
