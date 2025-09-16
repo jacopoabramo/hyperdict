@@ -4,9 +4,9 @@
 # This only without shared_lock, using multiprocessing.RLock() internally.
 # This is much faster than the spawn alterntive.
 #
-from hyperdict import HyperDict
-
 import multiprocessing
+
+from hyperdict import HyperDict
 
 count = 100000
 

@@ -1,6 +1,6 @@
-import unittest
 import subprocess
 import sys
+import unittest
 
 import hyperdict
 import hyperdict.errors

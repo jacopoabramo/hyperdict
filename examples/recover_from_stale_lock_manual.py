@@ -5,17 +5,17 @@
 # A strategy for recovery with a timeout is demonstrated.
 #
 
-import sys
 import os
+import sys
 
 sys.path.insert(0, "..")
 
-from hyperdict import HyperDict
-
 import multiprocessing
-import time
 import signal
 import subprocess
+import time
+
+from hyperdict import HyperDict
 
 # For better visibility in console, only count to 100
 count = 100

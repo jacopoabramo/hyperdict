@@ -1,5 +1,5 @@
-import time
 import multiprocessing
+import time
 
 count = 1_000_000
 count = 100_000

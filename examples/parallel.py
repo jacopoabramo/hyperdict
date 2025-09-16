@@ -12,9 +12,9 @@ import sys
 
 sys.path.insert(0, "..")
 
-from hyperdict import HyperDict
-
 import multiprocessing
+
+from hyperdict import HyperDict
 
 count = 100_000
 

@@ -21,6 +21,7 @@ from __future__ import annotations
 __all__ = ["HyperDict"]
 
 import collections.abc
+import logging
 import multiprocessing
 import multiprocessing.shared_memory
 import os
@@ -28,12 +29,12 @@ import pickle
 import sys
 import time
 import weakref
-import psutil
-import logging
-import atomics
-import hyperdict.errors as errors
-from typing import Any, Optional, Union, Mapping, Iterator, TypeVar
+from typing import Any, Iterator, Mapping, Optional, TypeVar, Union
 
+import atomics
+import psutil
+
+import hyperdict.errors as errors
 
 log = logging.getLogger("hyperdict")
 

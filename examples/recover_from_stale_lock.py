@@ -7,17 +7,17 @@
 # NOTE: There is recover_from_stale_lock.py and recover_from_stale_lock_manual.py. The manual example
 #       manages the decision itself when a lock is stale.
 
-import sys
 import os
+import sys
 
 sys.path.insert(0, "..")
 
-from hyperdict import HyperDict
-
 import multiprocessing
-import time
 import signal
 import subprocess
+import time
+
+from hyperdict import HyperDict
 
 # For better visibility in console, only count to 100
 count = 100
