@@ -15,18 +15,18 @@ name = "ultra6"
 
 
 def P1():
-    ultra = HyperDict(name=name)
+    hyper = HyperDict(name=name)
 
     while True:
-        ultra["P1"] = random.random()
+        hyper["P1"] = random.random()
 
 
 def P2():
-    ultra = HyperDict(name=name)
+    hyper = HyperDict(name=name)
 
     while True:
         chars = "".join([random.choice(string.ascii_lowercase) for i in range(8)])
-        ultra["P2"] = chars
+        hyper["P2"] = chars
 
 
 if __name__ == "__main__":
@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     HyperDict.unlink_by_name(name, ignore_errors=True)
 
-    ultra = HyperDict(
+    hyper = HyperDict(
         {"P1": float(0), "P2": ""}, name=name, buffer_size=100, shared_lock=True
     )
 
@@ -46,8 +46,7 @@ if __name__ == "__main__":
     p2.start()
 
     while True:
-        print(ultra)
-        # x = str(ultra)
+        print(hyper)
 
     p1.join()
     p2.join()

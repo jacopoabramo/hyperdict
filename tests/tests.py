@@ -29,54 +29,54 @@ class HyperDictTests(unittest.TestCase):
         return self.assertEqual(ret.returncode, target, self.exec_show_output(ret))
 
     def test_count(self):
-        ultra = hyperdict.HyperDict()
-        other = hyperdict.HyperDict(name=ultra.name)
+        hyper = hyperdict.HyperDict()
+        other = hyperdict.HyperDict(name=hyper.name)
 
         count = 100
         for i in range(count // 2):
-            ultra[i] = i
+            hyper[i] = i
 
         for i in range(count // 2, count):
             other[i] = i
 
-        self.assertEqual(len(ultra), len(other))
+        self.assertEqual(len(hyper), len(other))
 
     def test_huge_value(self):
-        ultra = hyperdict.HyperDict()
+        hyper = hyperdict.HyperDict()
 
         # One megabyte string
-        self.assertEqual(ultra.full_dump_counter, 0)
+        self.assertEqual(hyper.full_dump_counter, 0)
 
         length = 1_000_000
 
-        ultra["huge"] = " " * length
+        hyper["huge"] = " " * length
 
-        self.assertEqual(ultra.full_dump_counter, 1)
-        self.assertEqual(len(ultra.data["huge"]), length)
+        self.assertEqual(hyper.full_dump_counter, 1)
+        self.assertEqual(len(hyper.data["huge"]), length)
 
-        other = hyperdict.HyperDict(name=ultra.name)
+        other = hyperdict.HyperDict(name=hyper.name)
 
         self.assertEqual(len(other.data["huge"]), length)
 
     def test_parameter_passing(self):
-        ultra = hyperdict.HyperDict(
+        hyper = hyperdict.HyperDict(
             shared_lock=True, buffer_size=4096 * 8, full_dump_size=4096 * 8
         )
-        # Connect `other` dict to `ultra` dict via `name`
-        other = hyperdict.HyperDict(name=ultra.name)
+        # Connect `other` dict to `hyper` dict via `name`
+        other = hyperdict.HyperDict(name=hyper.name)
 
-        self.assertIsInstance(ultra.lock, hyperdict.SharedLock)
+        self.assertIsInstance(hyper.lock, hyperdict.SharedLock)
         self.assertIsInstance(other.lock, hyperdict.SharedLock)
 
-        self.assertEqual(ultra.buffer_size, other.buffer_size)
+        self.assertEqual(hyper.buffer_size, other.buffer_size)
 
     def test_iter(self):
-        ultra = hyperdict.HyperDict()
-        # Connect `other` dict to `ultra` dict via `name`
-        other = hyperdict.HyperDict(name=ultra.name)
+        hyper = hyperdict.HyperDict()
+        # Connect `other` dict to `hyper` dict via `name`
+        other = hyperdict.HyperDict(name=hyper.name)
 
-        ultra[1] = 1
-        ultra[2] = 2
+        hyper[1] = 1
+        hyper[2] = 2
 
         counter = 0
         for i in other.items():
@@ -84,7 +84,7 @@ class HyperDictTests(unittest.TestCase):
 
         self.assertEqual(counter, 2)
 
-        self.assertEqual(ultra.items(), other.items())
+        self.assertEqual(hyper.items(), other.items())
 
     def test_delete(self):
         import random
@@ -135,24 +135,24 @@ class HyperDictTests(unittest.TestCase):
         self.assertEqual(
             file_count, 0, "file handle count before before tests should be 0"
         )
-        ultra = hyperdict.HyperDict(nested={1: 1})
+        hyper = hyperdict.HyperDict(nested={1: 1})
         file_count = len(p.open_files())
         self.assertEqual(
             file_count,
             4,
             "file handle count with one simple hyperdict.HyperDict should be 4",
         )
-        del ultra
+        del hyper
         file_count = len(p.open_files())
         self.assertEqual(
             file_count,
             0,
             "file handle count after deleting the hyperdict.HyperDict should be 0 again",
         )
-        ultra = hyperdict.HyperDict(nested={1: 1}, recurse=True)
+        hyper = hyperdict.HyperDict(nested={1: 1}, recurse=True)
         file_count = len(p.open_files())
         self.assertEqual(file_count, 12, "nested file handle count should be 12")
-        del ultra
+        del hyper
         file_count = len(p.open_files())
         self.assertEqual(
             file_count,

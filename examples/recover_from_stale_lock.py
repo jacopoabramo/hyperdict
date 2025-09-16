@@ -91,8 +91,8 @@ def run(name, target):
 
 
 if __name__ == "__main__":
-    ultra = HyperDict(buffer_size=10_000, shared_lock=True)
-    ultra["counter"] = 0
+    hyper = HyperDict(buffer_size=10_000, shared_lock=True)
+    hyper["counter"] = 0
 
     processes = []
 
@@ -100,7 +100,7 @@ if __name__ == "__main__":
 
     for x in range(number_of_processes):
         processes.append(
-            ctx.Process(target=run, name=f"Process {x}", args=[ultra.name, count])
+            ctx.Process(target=run, name=f"Process {x}", args=[hyper.name, count])
         )
 
     # These processes should write more or less at the same time
@@ -110,8 +110,4 @@ if __name__ == "__main__":
     for p in processes:
         p.join()
 
-    # print(ultra)
-    # ultra.print_status()
-    # ultra.lock.print_status()
-
-    print("Counter:", ultra["counter"], "==", count)
+    print("Counter:", hyper["counter"], "==", count)

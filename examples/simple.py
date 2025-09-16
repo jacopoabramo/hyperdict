@@ -1,7 +1,7 @@
 #
 # Simple counter example
 #
-# Two dicts `ultra` and `other` are linked together using shared memory.
+# Two dicts `hyper` and `other` are linked together using shared memory.
 
 import sys
 
@@ -13,14 +13,14 @@ count = 100_000
 
 if __name__ == "__main__":
     # No name provided to create a new dict with random name
-    ultra = HyperDict(buffer_size=100_000)
-    # Connect `other` dict to `ultra` dict via `name`
-    other = HyperDict(name=ultra.name)
+    hyper = HyperDict(buffer_size=100_000)
+    # Connect `other` dict to `hyper` dict via `name`
+    other = HyperDict(name=hyper.name)
 
     for i in range(count // 2):
-        ultra[i] = i
+        hyper[i] = i
 
     for i in range(count // 2, count):
         other[i] = i
 
-    print("Length: ", len(other), " == ", len(ultra), " == ", count)
+    print("Length: ", len(other), " == ", len(hyper), " == ", count)

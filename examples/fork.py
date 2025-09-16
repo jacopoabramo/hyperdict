@@ -4,7 +4,6 @@
 # This only without shared_lock, using multiprocessing.RLock() internally.
 # This is much faster than the spawn alterntive.
 #
-
 from hyperdict import HyperDict
 
 import multiprocessing
@@ -12,32 +11,28 @@ import multiprocessing
 count = 100000
 
 
-def run(d, target, x):
-    for i in range(target):
+def run(d: HyperDict, target: int) -> None:
+    for _ in range(target):
         # Adding 1 to the counter is unfortunately not an atomic operation in Python,
-        # but HyperDict's shared lock comes to our resuce: We can simply reuse it.
+        # but HyperDict's shared lock comes to our rescue: We can simply reuse it.
         with d.lock:
             # Under the lock, we can safely read, modify and
             # write back any values in the shared dict
             d["counter"] += 1
-            # print("counter: ", d['counter'], i, x)
+            print(f"{multiprocessing.current_process().name}: {d['counter']}")
 
 
 if __name__ == "__main__":
-    ultra = HyperDict(buffer_size=10_000)
-    ultra["some-key"] = "some value"
-    ultra["counter"] = 0
+    hyper = HyperDict(name="fork-demo", buffer_size=10_000)
+    hyper["some-key"] = "some value"
+    hyper["counter"] = 0
 
-    name = ultra.name
+    name = hyper.name
 
-    # print(ultra)
+    # print(hyper)
 
-    p1 = multiprocessing.Process(
-        target=run, name="Process 1", args=[ultra, count // 2, 1]
-    )
-    p2 = multiprocessing.Process(
-        target=run, name="Process 2", args=[ultra, count // 2, 2]
-    )
+    p1 = multiprocessing.Process(target=run, name="Process 1", args=[hyper, count // 2])
+    p2 = multiprocessing.Process(target=run, name="Process 2", args=[hyper, count // 2])
 
     # These processes should write more or less at the same time
     p1.start()
@@ -46,8 +41,4 @@ if __name__ == "__main__":
     p1.join()
     p2.join()
 
-    # print(ultra)
-    # ultra.print_status()
-    # ultra.lock.print_status()
-
-    print("Counter: ", ultra["counter"], " == ", count)
+    print("Counter: ", hyper["counter"], " == ", count)

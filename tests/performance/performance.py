@@ -104,36 +104,36 @@ def main():
 
     from hyperdict import HyperDict
 
-    ultra = HyperDict()
+    hyper = HyperDict()
 
     # HyperDict (writes)
     t_start = time.perf_counter()
     for i in range(count):
-        ultra[1] = 1
+        hyper[1] = 1
     t_end = time.perf_counter()
     print_perf("HyperDict", "writes", t_start, t_end, count)
 
     # UltraDic (reads)
     t_start = time.perf_counter()
     for i in range(count):
-        _ = ultra[1]
+        _ = hyper[1]
     t_end = time.perf_counter()
     print_perf("HyperDict", "reads", t_start, t_end, count)
 
-    ultra = HyperDict(shared_lock=True)
+    hyper = HyperDict(shared_lock=True)
 
     # HyperDict with shared_lock=True (writes)
     t_start = time.perf_counter()
     for i in range(count):
-        with ultra.lock:
-            ultra[1] = 1
+        with hyper.lock:
+            hyper[1] = 1
     t_end = time.perf_counter()
     print_perf("HyperDict (shared_lock=True)", "writes", t_start, t_end, count)
 
     # UltraDic with shared_lock=True (reads)
     t_start = time.perf_counter()
     for i in range(count):
-        _ = ultra[1]
+        _ = hyper[1]
     t_end = time.perf_counter()
     print_perf("HyperDict (shared_lock=True)", "reads", t_start, t_end, count)
 

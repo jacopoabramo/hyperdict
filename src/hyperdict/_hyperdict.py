@@ -37,14 +37,14 @@ from typing import Any, Optional, Union, Mapping, Iterator, TypeVar
 
 log = logging.getLogger("hyperdict")
 
+MAX_BUFFER_SIZE: int = 2**32 - 1
+
 
 def remove_shm_from_resource_tracker() -> None:
     """
     Monkey-patch multiprocessing.resource_tracker so SharedMemory won't be tracked
     More details at: https://bugs.python.org/issue38119
     """
-    # pylint: disable=protected-access, import-outside-toplevel
-    # Ignore linting errors in this bug workaround hack
     from multiprocessing import resource_tracker
 
     def fix_register(name: str, rtype: str) -> None:
@@ -152,8 +152,10 @@ class SharedLock:
                     time_start = e.timestamp
                     blocking_pid = e.blocking_pid
 
-                # We should not be the blocking pid
-                assert blocking_pid != self.pid
+                if blocking_pid == self.pid:
+                    raise Exception(
+                        f"Deadlock detected: We are the blocking pid {blocking_pid} and cannot acquire the lock"
+                    )
 
                 time_passed = time.monotonic() - time_start
 
@@ -167,7 +169,7 @@ class SharedLock:
                         continue
                     raise errors.CannotAcquireLockTimeout(
                         blocking_pid=e.blocking_pid, timestamp=time_start
-                    ) from None
+                    )
 
     def acquire(
         self,
@@ -390,11 +392,10 @@ class HyperDict(collections.UserDict, dict):
     def __init__(
         self,
         *args: Any,
-        name: Optional[str] = None,
-        create: Optional[bool] = None,
+        name: str,
+        create: Optional[bool] = False,
         buffer_size: int = 10_000,
-        serializer: Any = pickle,
-        shared_lock: Optional[bool] = None,
+        shared_lock: Optional[bool] = False,
         full_dump_size: Optional[int] = None,
         auto_unlink: Optional[bool] = None,
         recurse: Optional[bool] = None,
@@ -409,10 +410,8 @@ class HyperDict(collections.UserDict, dict):
             if full_dump_size:
                 full_dump_size = -(full_dump_size // -4096) * 4096
 
-        assert buffer_size < 2**32
-
-        if recurse:
-            assert serializer == pickle
+        if buffer_size > MAX_BUFFER_SIZE:
+            raise ValueError(f"buffer_size must be < {MAX_BUFFER_SIZE}")
 
         self.data = {}
 
@@ -439,8 +438,6 @@ class HyperDict(collections.UserDict, dict):
         self.finalizer = weakref.finalize(self, finalize, weakref.ref(self))
 
         self.init_remotes()
-
-        self.serializer = serializer
 
         # Actual stream buffer that contains marshalled data of changes to the dict
         self.buffer = self.get_memory(
@@ -596,37 +593,37 @@ class HyperDict(collections.UserDict, dict):
 
     @staticmethod
     def get_memory(
-        *, create: bool = True, name: Optional[str] = None, size: int = 0
+        *, create: bool = True, name: str, size: int = 0
     ) -> multiprocessing.shared_memory.SharedMemory:
         """
         Attach an existing SharedMemory object with `name`.
 
         If `create` is True, create the object if it does not exist.
         """
-        assert size > 0 or not create
-        if name:
-            # First try to attach to existing memory
-            try:
-                memory = multiprocessing.shared_memory.SharedMemory(name=name)
-                # log.debug('Attached shared memory: ', memory.name)
+        assert size > 0 or not create, "Size must be > 0 if create is True"
 
-                if create:
-                    raise errors.AlreadyExists(
-                        f"Cannot create memory '{name}' because it already exists"
-                    )
+        # First try to attach to existing memory
+        try:
+            memory = multiprocessing.shared_memory.SharedMemory(name=name)
+            # log.debug('Attached shared memory: ', memory.name)
 
-                return memory
-            except FileNotFoundError:
-                pass
+            if create:
+                raise errors.AlreadyExists(
+                    f"Cannot create memory '{name}' because it already exists"
+                )
+
+            return memory
+        except FileNotFoundError:
+            pass
 
         # No existing memory found
-        if create or create is None:
+        if create:
             memory = multiprocessing.shared_memory.SharedMemory(
                 create=True, size=size, name=name
             )
-            # multiprocessing.resource_tracker.unregister(memory._name, 'shared_memory')
+
             # Remember that we have created this memory
-            memory.created_by_ultra = True
+            setattr(memory, "created_by_ultra", True)
             # log.debug('Created shared memory: ', memory.name)
 
             return memory
@@ -647,7 +644,7 @@ class HyperDict(collections.UserDict, dict):
 
             self.apply_update()
 
-            marshalled = self.serializer.dumps(self.data)
+            marshalled = pickle.dumps(self.data)
             length = len(marshalled)
 
             # If we don't have a fixed size, let's create full dump memory dynamically
@@ -784,7 +781,7 @@ class HyperDict(collections.UserDict, dict):
                 assert bytes(buf[pos : pos + 1]) == b"\xff"
                 pos += 1
                 # Unserialize the update data, we expect a tuple of key and value
-                self.data = self.serializer.loads(bytes(buf[pos : pos + length]))
+                self.data = pickle.loads(bytes(buf[pos : pos + length]))
                 self.full_dump_counter = full_dump_counter
                 self.update_stream_position = 0
 
@@ -812,7 +809,7 @@ class HyperDict(collections.UserDict, dict):
         # If mode is 0, it means delete the key from the dict
         # If mode is 1, it means update the key
         # mode = not delete
-        marshalled = self.serializer.dumps((not delete, key, item))
+        marshalled = pickle.dumps((not delete, key, item))
         length = len(marshalled)
 
         with self.lock:
@@ -876,7 +873,7 @@ class HyperDict(collections.UserDict, dict):
                     assert bytes(self.buffer.buf[pos : pos + 1]) == b"\xff"
                     pos += 1
                     # Unserialize the update data, we expect a tuple of key and value
-                    mode, key, value = self.serializer.loads(
+                    mode, key, value = pickle.loads(
                         bytes(self.buffer.buf[pos : pos + length])
                     )
                     # Update or local dict cache (in our parent)

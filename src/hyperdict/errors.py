@@ -24,6 +24,9 @@ class CannotAttachSharedMemory(Exception):
 
 
 class CannotAcquireLock(Exception):
+    timestamp: float
+    blocking_pid: int
+
     def __init__(
         self, *args, blocking_pid: int = 0, timestamp: float | None = None, **kwargs
     ) -> None:

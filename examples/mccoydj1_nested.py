@@ -15,29 +15,25 @@ name = "ultra6"
 
 def P1():
     print("START P1", file=sys.stderr)
-    ultra = HyperDict(name=name)
+    hyper = HyperDict(name=name)
 
     while True:
-        ultra["banned"][
+        hyper["banned"][
             f"{random.randint(1, 254)}.{random.randint(1, 254)}.{random.randint(1, 254)}.{random.randint(1, 254)}"
         ] = True
-        # print('P1', subprocess.check_output(f"lsof -p {multiprocessing.current_process().pid} |wc -l", shell=True))
-        print("P1", ultra)
-
-        # if len(ultra['banned']) > 1000:
-        #    ultra['banned'].pop()
+        print("P1", hyper)
 
 
 def P2():
     print("START P2", file=sys.stderr)
-    ultra = HyperDict(name=name)
+    hyper = HyperDict(name=name)
 
     while True:
         chars = "".join([random.choice(string.ascii_lowercase) for i in range(8)])
-        ultra["banned"][
+        hyper["banned"][
             f"{random.randint(1, 254)}.{random.randint(1, 254)}.{random.randint(1, 254)}.{random.randint(1, 254)}"
         ] = chars
-        print("P2", ultra)
+        print("P2", hyper)
 
 
 if __name__ == "__main__":
@@ -48,7 +44,7 @@ if __name__ == "__main__":
 
     HyperDict.unlink_by_name(name, ignore_errors=True)
 
-    ultra = HyperDict(
+    hyper = HyperDict(
         {"banned": {"127.0.0.1": True}},
         name=name,
         buffer_size=10_000,
@@ -63,9 +59,7 @@ if __name__ == "__main__":
     p2.start()
 
     while True:
-        print("MA", ultra)
-        # print('MA', subprocess.check_output(f"lsof -p {multiprocessing.current_process().pid} |wc -l", shell=True))
-        # x = str(ultra)
+        print("MA", hyper)
 
     p1.join()
     p2.join()

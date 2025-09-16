@@ -36,11 +36,11 @@ def run(name, target, x):
 if __name__ == "__main__":
     # No name provided to create a new dict with random name.
     # To make it work under Windows, we need to set a static `full_dump_size`
-    ultra = HyperDict(buffer_size=10_000, shared_lock=True, full_dump_size=10_000)
-    ultra["counter"] = 0
+    hyper = HyperDict(buffer_size=10_000, shared_lock=True, full_dump_size=10_000)
+    hyper["counter"] = 0
 
     # Our children will use the name to attach to the existing dict
-    name = ultra.name
+    name = hyper.name
 
     ctx = multiprocessing.get_context("spawn")
 
@@ -64,4 +64,4 @@ if __name__ == "__main__":
 
     print("Joined 4 processes")
 
-    print("Counter: ", ultra["counter"], " == ", count)
+    print("Counter: ", hyper["counter"], " == ", count)
