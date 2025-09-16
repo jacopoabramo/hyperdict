@@ -134,4 +134,4 @@ dmypy.json
 .pyre/
 
 _hyperdict.c
-_errors.c
+errors.c

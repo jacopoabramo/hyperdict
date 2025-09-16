@@ -1,3 +1,3 @@
-from ._hyperdict import HyperDict
+from ._hyperdict import HyperDict, SharedLock
 
-__all__ = ["HyperDict"]
+__all__ = ["HyperDict", "SharedLock"]

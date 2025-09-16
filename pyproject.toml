@@ -1,3 +1,27 @@
 [build-system]
-requires = ["setuptools", "wheel", "cython", "pylint", "psutil"]
+requires = ["setuptools>=80", "cython>=3.1", "psutil", "atomics"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "hyperdict"
+version = "0.1.0"
+license = {text = "MIT"}
+authors = [
+    {name = "Jacopo Abramo", email = "jacopo.abramo@gmail.com"}
+]
+description="A fork of UltraDict: a fast, concurrent, persistent, and memory-mapped Python dictionary."
+readme = {file = "readme.md", content-type = "text/markdown"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.10"
+
+[tool.setuptools]
+ext-modules = [
+  {name = "hyperdict._hyperdict", sources = ["src/hyperdict/_hyperdict.py"]},
+  {name = "hyperdict._errors", sources = ["src/hyperdict/errors.py"]}
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

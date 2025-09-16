@@ -22,9 +22,9 @@ from __future__ import annotations
 
 __all__ = ["HyperDict"]
 
+import collections.abc
 import multiprocessing
 import multiprocessing.shared_memory
-import collections
 import os
 import pickle
 import sys
@@ -33,7 +33,7 @@ import weakref
 import psutil
 import logging
 import atomics
-import _errors as errors
+import hyperdict.errors as errors
 from typing import Any, Optional, Union, Mapping, Iterator, TypeVar
 
 
@@ -139,7 +139,6 @@ class SharedLock:
 
     def acquire_with_timeout(
         self,
-        block: bool = True,
         sleep_time: float = 0.000001,
         timeout: float = 1.0,
         steal_after_timeout: bool = False,
@@ -518,13 +517,7 @@ class HyperDict(collections.UserDict, dict):
 
         # Local lock for all processes and threads created by the same interpreter
         if shared_lock:
-            try:
-                self.lock = self.SharedLock(self, "lock_remote", "lock_pid_remote")
-            except NameError:
-                # self.cleanup()
-                raise errors.MissingDependency(
-                    "Install `atomics` Python package to use shared_lock=True"
-                ) from None
+            self.lock = SharedLock(self, "lock_remote", "lock_pid_remote")
         else:
             self.lock = multiprocessing.RLock()
 
@@ -565,26 +558,8 @@ class HyperDict(collections.UserDict, dict):
         # Load all data from shared memory
         self.apply_update()
 
-        if sys.platform == "win32":
-            if not shared_lock:
-                log.warning(
-                    "You are running on win32, potentially without locks. Consider setting shared_lock=True"
-                )
-
-        # if auto_unlink:
-        #    atexit.register(self.unlink)
-        # else:
-        #    atexit.register(self.cleanup)
-
-        # log.debug("Initialized", self.name)
-
     def __del__(self) -> None:
-        # log.debug("__del__", self.name)
         self.close()
-        # if hasattr(self, 'recurse') and self.recurse:
-        #    #log.debug("Close recurse register")
-        #    self.recurse_register.close()
-        #    del self.recurse_register
 
     def init_remotes(self) -> None:
         # Memoryviews to the right buffer position in self.control
@@ -958,11 +933,8 @@ class HyperDict(collections.UserDict, dict):
             self[k] = v
 
     def __delitem__(self, key: Any) -> None:
-        # log.debug("__delitem__ {}", key)
         with self.lock:
             self.apply_update()
-
-            # Update our local copy
             self.data.__delitem__(key)
 
             self.append_update(key, b"", delete=True)
@@ -997,12 +969,10 @@ class HyperDict(collections.UserDict, dict):
             # It's important for the integrity to do this first
             self.data.__setitem__(key, item)
 
-            # Append the update to the update stream
             self.append_update(key, item)
-            # TODO: Do something if append_u int.from_bytes(self.update_stream_position_remote, 'little')pdate() fails
+            # TODO: Do something if append_update() fails
 
     def __getitem__(self, key: Any) -> Any:
-        # log.debug("__getitem__ {}", key)
         self.apply_update()
         return self.data[key]
 
@@ -1011,7 +981,7 @@ class HyperDict(collections.UserDict, dict):
         self.apply_update()
         return key in self.data
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: HyperDict) -> bool:
         return self.apply_update() == other.apply_update()
 
     def __contains__(self, key: Any) -> bool:
@@ -1074,15 +1044,9 @@ class HyperDict(collections.UserDict, dict):
         pprint.pprint(status, stream=sys.stderr if stderr else sys.stdout)
 
     def cleanup(self) -> dict[Any, Any]:
-        # log.debug('Cleanup')
-
-        # for item in self.data.items():
-        #    print(type(item))
-
         if hasattr(self, "lock") and hasattr(self.lock, "cleanup"):
             self.lock.cleanup()
 
-        # If we use RLock(), this closes the file handle
         if hasattr(self, "lock"):
             del self.lock
         if hasattr(self, "full_dump_memory"):
@@ -1092,19 +1056,6 @@ class HyperDict(collections.UserDict, dict):
         del self.data
 
         self.del_remotes()
-
-        # self.control.close()
-        # self.buffer.close()
-
-        # if self.full_dump_memory:
-        #    self.full_dump_memory.close()
-
-        # No further cleanup on Windows, it will break everything
-        # if sys.platform == 'win32':
-        #    return
-
-        # Only do cleanup once
-        # atexit.unregister(self.cleanup)
 
         self.apply_update = self.raise_already_closed
         self.append_update = self.raise_already_closed
@@ -1198,94 +1149,3 @@ class HyperDict(collections.UserDict, dict):
             if not ignore_errors:
                 raise e
         return False
-
-
-# Saved as a reference
-
-# def bytes_to_int(bytes):
-#    result = 0
-#    for b in bytes:
-#        result = result * 256 + int(b)
-#    return result
-#
-# def int_to_bytes(value, length):
-#    result = []
-#    for i in range(0, length):
-#        result.append(value >> (i * 8) & 0xff)
-#    result.reverse()
-#    return result
-
-# class Mapping(dict):
-#
-#    def __init__(self, *args, **kwargs):
-#        print("__init__", args, kwargs)
-#        super().__init__(*args, **kwargs)
-#
-#    def __setitem__(self, key, item):
-#        print("__setitem__", key, item)
-#        self.__dict__[key] = item
-#
-#    def __getitem__(self, key):
-#        print("__getitem__", key)
-#        return self.__dict__[key]
-#
-#    def __repr__(self):
-#        print("__repr__")
-#        return repr(self.__dict__)
-#
-#    def __len__(self):
-#        print("__len__")
-#        return len(self.__dict__)
-#
-#    def __delitem__(self, key):
-#        print("__delitem__")
-#        del self.__dict__[key]
-#
-#    def clear(self):
-#        print("clear")
-#        return self.__dict__.clear()
-#
-#    def copy(self):
-#        print("copy")
-#        return self.__dict__.copy()
-#
-#    def has_key(self, k):
-#        print("has_key")
-#        return k in self.__dict__
-#
-#    def update(self, *args, **kwargs):
-#        print("update")
-#        return self.__dict__.update(*args, **kwargs)
-#
-#    def keys(self):
-#        print("keys")
-#        return self.__dict__.keys()
-#
-#    def values(self):
-#        print("values")
-#        return self.__dict__.values()
-#
-#    def items(self):
-#        print("items")
-#        return self.__dict__.items()
-#
-#    def pop(self, *args):
-#        print("pop")
-#        return self.__dict__.pop(*args)
-#
-#    def __cmp__(self, dict_):
-#        print("__cmp__")
-#        return self.__cmp__(self.__dict__, dict_)
-#
-#    def __contains__(self, item):
-#        print("__contains__", item)
-#        return item in self.__dict__
-#
-#    def __iter__(self):
-#        print("__iter__")
-#        return iter(self.__dict__)
-#
-#    def __unicode__(self):
-#        print("__unicode__")
-#        return unicode(repr(self.__dict__))
-#
