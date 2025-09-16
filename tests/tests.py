@@ -6,7 +6,7 @@ import hyperdict
 import hyperdict.errors
 
 
-class UltraDictTests(unittest.TestCase):
+class HyperDictTests(unittest.TestCase):
     def setUp(self):
         pass
 
