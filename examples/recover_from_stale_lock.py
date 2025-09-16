@@ -94,7 +94,7 @@ if __name__ == "__main__":
     hyper = HyperDict(buffer_size=10_000, shared_lock=True)
     hyper["counter"] = 0
 
-    processes = []
+    processes: list[multiprocessing.Process] = []
 
     ctx = multiprocessing.get_context("spawn")
 
